@@ -1,0 +1,283 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+%  This package provides some updates and tweaks for the electhesis class.
+%
+%  Usage:
+%   Put this file in the same directory as your LaTeX source. Make sure you
+%   use \documentclass{electhesis}, and then \usepackage{electhesis-tweaks}.
+%   See below for valid package options.
+%
+%  Fixes:
+%   - Wrap chapter headings in \texorpdfstring for hyperref compatibility.
+%   - Use T1-encoded Latin Modern with MicroType for better typography.
+%   - Use single line spacing for the bibliography and the verbatim
+%     environment.
+%   - Use tt font and single line spacing for the lstlistings environment.
+%   - Make caption formats match electhesis when using the subcaption package.
+%
+%  Options:
+%   - parsec:     Format \paragraphs similar to \subsubsections.
+%   - origtoc:    Use electhesis' default TOC layout. Without this option, this
+%                 package will add the abstract and references to the ToC and
+%                 add other frontmatter stuff as sections rather than chapters.
+%   - nonatbib:   Don't use natbib for referencing.
+%
+%  New Commands:
+%   - \unnumberedchapter{name}
+%                 Create a \chapter* and add it to the ToC.
+%   - \frontmattersection{name}
+%                 Create a \chapter* and add it to the ToC either as a chapter
+%                 or section depending on origtoc.
+%
+%  New Environments:
+%   - enuminline: Create an in-text list with italic lower-case roman numerals.
+%
+%  Simon Knopp, 2014
+%
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\NeedsTeXFormat{LaTeX2e}[1994/06/01]
+\ProvidesPackage{electhesis-tweaks}[2014/04/25 Tweaks and updates to electhesis]
+
+\@ifclassloaded{electhesis}{}{%
+    \PackageError{electhesis-tweaks}
+                 {You're not using the electhesis document class!}
+                 {You can only use the electhesis-tweaks package with the
+                     electhesis document class.}
+}
+
+% Use natbib for referencing. Depends on electhesisnatbib.bst
+\newif\if@usenatbib\@usenatbibtrue
+\DeclareOption{nonatbib}{\@usenatbibfalse}
+
+% Format \paragraphs like \subsubsections
+\newif\if@parsec\@parsecfalse
+\DeclareOption{parsec}{\@parsectrue}
+
+% Add front/backmatter sections to the ToC
+\newif\if@origtoc\@origtocfalse
+\DeclareOption{origtoc}{\@origtoctrue}
+
+\ProcessOptions\relax
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Dependencies
+
+% Use the more up-to-date and complete LM fonts instead of CM
+%\RequirePackage{lmodern}
+\RequirePackage{newtxtext}
+\RequirePackage[T1]{fontenc}
+
+% Use some fancy microtypography algorithms to make everything look awesome.
+% This somehow manages to drastically reduce the amount of hyphenation that's
+% required while still making your text look great. The textcomp package isn't
+% really required but including prevents some warnings from microtype about
+% unknown glyphs.
+\RequirePackage{microtype,textcomp}
+
+% Include fixes for the LaTeX kernel.
+\RequirePackage{fixltx2e}
+
+% Require subcaption so that we can configure it to use the original electhesis
+% caption style.
+\RequirePackage{subcaption}
+
+% Style in-text enumerations.
+\RequirePackage[inline]{enumitem}
+
+% This is the 21st century; everything's hyperlinked.
+\RequirePackage{hyperref}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Configure dependencies
+
+% Restore the electhesis caption style. Unfortunately this doesn't get rid of
+% the warning about using an unsupported document class, though it is safe to
+% ignore that warning.
+\captionsetup*{%
+    font = footnotesize,
+    labelfont = bf,
+    labelformat = simple,
+    labelsep = quad,
+    subrefformat = parens,
+}
+\captionsetup*[sub]{%
+    font = footnotesize,
+    labelfont = normalfont,
+    justification = raggedright,
+}
+\captionsetup*[algorithm]{%
+    font = footnotesize,
+    labelfont = bf,
+    labelformat = simple,
+    labelsep = quad,
+    name = Algorithm,
+    justification = centering,
+}
+
+% Reconfigure ruled-style environments defined using the 'float' package
+% (e.g. algorithm) to look a bit more like booktabs tables for consistency.
+\AtBeginDocument{%
+    \providecommand\fs@ruled{}
+    \let\old@fs@ruled\fs@ruled
+    \renewcommand\fs@ruled{\old@fs@ruled
+        \def\@fs@pre{}%
+        \def\@fs@mid{\vspace\abovecaptionskip\hrule\@height.08em\kern1ex}%
+        \def\@fs@post{\kern1ex\hrule\@height.08em}%
+    }
+}
+
+% Set some sensible style defaults for hyperref. Coloured boxes are ugly.
+\hypersetup{%
+    pdfborder={0 0 0},
+    linkcolor=black,
+    bookmarksopen=false,
+    bookmarksnumbered=true,
+    pdfpagelayout={TwoPageRight},
+    pdfduplex=DuplexFlipLongEdge,
+}
+
+% Store the document metadata as PDF properties
+\AtBeginDocument{%
+    \hypersetup{%
+        pdfauthor={\@author},
+        pdftitle={\@title},
+        pdfsubject={\@thesismessage\ \@degree\ in \@department\ at the \@school},
+    }
+}
+
+% Set a sensible default style for listings
+\AtBeginDocument{%
+    \@ifpackageloaded{listings}{%
+        \lstset{%
+            basicstyle=\linespread{1}\ttfamily,
+            columns=fullflexible,
+            frame=lines,
+        }
+    }{}
+}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Update electhesis internals
+
+% Re-define \chapter to avoid hyperref warnings. This is copied straight from
+% electhesis with the addition of \texorpdfstring.
+\def\@chapter[#1]#2{%
+    \ifnum \c@secnumdepth >\m@ne
+        \if@mainmatter
+            \refstepcounter{chapter}
+            \typeout{\@chapapp\space\thechapter.}
+            \addcontentsline{toc}{chapter}{\texorpdfstring{%
+                \protect\numberline{\ChapterNumberCase{\@chapapp\ \thechapter}}%
+                \ChapterNumberCase{#1}}{\thechapter.\ #1}}%
+        \else
+            \addtoc@chap{#1}
+        \fi
+    \else
+        \addtoc@chap{#1}
+    \fi
+    \chaptermark{#1}%
+    \addtocontents{lof}{\protect\addvspace{10pt}}%
+    \addtocontents{lot}{\protect\addvspace{10pt}}%
+    \if@twocolumn
+        \@topnewpage[\@makechapterhead{#2}]%
+    \else
+        \@makechapterhead{#2}%
+        \@afterheading
+    \fi
+}
+
+% Add a PDF bookmark for the table of contents
+\let\old@tableofcontents\tableofcontents
+\renewcommand\tableofcontents{%
+    \cleardoublepage
+    \currentpdfbookmark{\contentsname}{toc}
+    \old@tableofcontents
+}
+
+% Use single line spacing for the bibliography. The rest of the document is
+% 1.5-spaced, but that's unnecessary for references.
+\let\old@bibliography\bibliography
+\renewcommand\bibliography[1]{%
+    \singlespacing
+    \old@bibliography{#1}}
+
+% Use single line spacing inside verbatim environment
+\def\verbatim@font{\linespread{1}\normalfont\ttfamily}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Internals
+
+\newcommand*{\addtoc@sec}[1]{\addcontentsline{toc}{section}{#1}}
+\newcommand*{\addtoc@chap}[1]{\addcontentsline{toc}{chapter}{%
+                              \texorpdfstring{\ChapterNumberCase{#1}}{#1}}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Public macros
+
+% Create a \chapter* and add it to the ToC
+\newcommand*{\unnumberedchapter}[1]{\chapter*{#1}\addtoc@chap{#1}}
+
+% Create a \chapter* and add it to the ToC either as a chapter or section
+% depending on 'origtoc'.
+\newcommand*{\frontmattersection}[1]{%
+    \chapter*{#1}%
+    \chaptermark{#1}%
+    \if@origtoc
+        \addtoc@chap{#1}%
+    \else
+        \addtoc@sec{#1}%
+    \fi
+}
+
+% Create an inline enum with lower-case roman numerals
+\newenvironment{enuminline}{\begin{enumerate*}[label=\emph{\roman*)}]}%
+                           {\end{enumerate*}}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+% Optional functionality
+
+% Use natbib for referencing
+\if@usenatbib
+    \IfFileExists{electhesisnatbib.bst}{}{%
+        \PackageError{electhesis-tweaks}{Could not find 'electhesisnatbib.bst'}
+            {You enabled the 'natbib' option, but I can't find
+                'electhesisnatbib.bst'.}
+    }
+    \RequirePackage[sort]{natbib}
+    \bibpunct{[}{]}{,}{a}{}{, }
+    \bibliographystyle{electhesisnatbib}
+\fi
+
+% Format \paragraphs like unnumbered \subsubsections
+\if@parsec
+    \renewcommand\paragraph{%
+        \@startsection{paragraph}{4}{\z@}%
+            {-3.25ex\@plus -1ex \@minus -.2ex}%
+            {1.5ex \@plus .2ex}%
+            {\SubsubsectionFont}}
+\fi
+
+% Add front/backmatter sections to the ToC
+\if@origtoc\else
+    \renewenvironment{abstract}{%
+        \frontmattersection{\abstractname}}{}
+
+    \renewenvironment{acknowledgement}{%
+        \frontmattersection{\acknowledgementname}}{}
+
+    \renewenvironment{preface}{%
+        \frontmattersection{\prefacename}}{}
+
+    \let\bibliography@notoc\bibliography
+    \renewcommand\bibliography[1]{%
+    \phantomsection
+	\addtoc@chap{\bibname}%
+        \bibliography@notoc{#1}%
+        }
+\fi
+
+\endinput
+
+% vim:ft=plaintex:nospell:
+

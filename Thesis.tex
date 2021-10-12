@@ -1,0 +1,214 @@
+\documentclass[twoside,a4paper]{electhesis} %, nonatbib origtoc
+
+\usepackage[parsec]{electhesis-tweaks}
+\raggedbottom	% Dont stretch text in a page if it does not fit.
+
+\usepackage{tabularx}							% A table package.
+
+%%%%%  MATH, UNITS, SYMBOLS  %%%%%
+\usepackage[tbtags]{mathtools}                  % Use amsmath + fixes
+\usepackage{amsthm}
+\usepackage{newtxmath}
+\usepackage{bm}
+\usepackage{nicefrac}
+\usepackage[separate-uncertainty=true]{siunitx}                    % Correctly formatted units
+
+
+%%%% Fixing the size of headings %%%%%
+\renewcommand{\HeadFont}{\footnotesize}
+
+%%%% Creating book-style headers. The ELECTHESIS's style can get messy at times. %%%
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\chaptermark}[1]{\markboth{\MakeUppercase{\thechapter.\ #1}}{}}
+\renewcommand{\sectionmark}[1]{\markright{\MakeUppercase{\thesection\ #1}}{}}
+\fancyhead[LE, RO]{\PageFont\thepage}
+\fancyhead[RE]{\HeadFont\leftmark}
+\fancyhead[LO]{\HeadFont\rightmark}
+\renewcommand{\headrulewidth}{1pt}
+\renewcommand{\footrulewidth}{0pt}
+
+
+\usepackage{appendix}	% Appendix package to handle appendices.
+
+%% Change referencing symbols. %%
+\usepackage[sort]{natbib}
+\bibpunct{[}{]}{,}{a}{}{, }
+
+%%%% Make sure day does not appear on the first page of title. %%%%
+\usepackage[nodayofweek]{datetime}
+\newdateformat{monthyeardate}{\monthname[\THEMONTH] \THEYEAR}
+
+
+%%%%%  DOCUMENT METADATA  %%%%%
+\phdthesis
+%\methesis
+
+
+%%%%%%%%%%%%%%%%%% Thesis title. %%%%%%%%%%%%%%%%%%%%%%
+\title{\texorpdfstring%
+	{This is the title of my thesis.} % Main title.
+	{This is a shorter version of my title.} % Short title.
+} % Usually the main and the short titles are same.
+
+%%%%%%%%%%%%%%%%% Thesis author %%%%%%%%%%%%%%%%%%%%%%%
+\author{John Doe}
+
+%%%%%%%%%%%%%%%%% Time of thesis, current time by default. %%%%%%%%%%%%%%%
+\date{\monthyeardate\today}
+
+%%%%%  FONTS  %%%%%
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+
+
+%%%%% Inline enumitem
+\usepackage{blindtext}
+\usepackage[inline]{enumitem}
+
+%% I use oxford comma. if you don't, change {, and } to { and }
+\sisetup{range-units=single,per-mode=symbol,list-units=single,list-final-separator={, and },detect-weight, detect-shape} 
+
+\renewrobustcmd{\bfseries}{\fontseries{b}\selectfont}
+
+%%%%%  Glossaries  %%%%%
+\usepackage[xindy,style=super,shortcuts=abbr,abbreviations,nonumberlist,nomain,nogroupskip,automake,docdef=restricted]{glossaries-extra}
+\setabbreviationstyle[abbreviations]{long-short-desc}
+\glssetcategoryattribute{abbreviation}{glossdesc}{firstuc}
+\makeglossaries
+
+%%%%%  FIGURES  %%%%%
+\usepackage{graphicx}                   % Include images
+\usepackage[export]{adjustbox}
+\usepackage{pdfpages}                   % Include PDFs
+\usepackage{flafter}                    % Place floats after definition
+\usepackage{subcaption}                 % Support for subfigures
+\usepackage{lpic}                       % Labels over pictures
+\usepackage{tikz-timing}                % Timing diagrams
+\usepackage{tikz-3dplot}                % Simple 3D figures
+\usepackage[mode=buildnew]{standalone}                 % Create figures in external tex files
+\usepackage{rotfloat}
+
+%%%%%  TABLES  %%%%%
+\usepackage{booktabs}                   % Good-looking tables
+\usepackage{multirow}                   % Span table rows
+\usepackage{longtable}                  % Required for acronym list
+
+%%%%%  SOURCE CODE  %%%%%
+\usepackage{listings}                   % Format source code
+
+%%%%%  PSEUDO CODE  %%%%%
+\usepackage[chapter]{algorithm}         % Floating algorithm environment
+\usepackage[noend]{algpseudocode}              % Format pseudo-code
+
+%%%%%  FOOTNOTES  %%%%%
+\usepackage{fnpct}                      % Kerning for footnotes near punctuation
+\usepackage[bottom,perpage]{footmisc}           % Place footnotes below bottom floats
+\usepackage{fnbreak}                    % Warn if footnotes break between pages
+
+%%%%%  LINKS & REFERENCES  %%%%%
+\usepackage[nohints]{minitoc}           % Insert in-chapter TOCs
+\usepackage{nameref}                    % Reference the text of section headings
+\usepackage[capitalize,noabbrev]{cleveref} % Automatic text in cross-references
+\newcommand{\crefrangeconjunction}{--}
+
+%%%%%  CONFIGURATION  %%%%%
+
+\usepackage{xparse}                     % Define more powerful commands
+
+\renewcommand\phi\varphi                % Prefer the variant phi glyph
+\renewcommand\epsilon\varepsilon        % Prefer the variant epsilon glyph
+
+\crefname{page}{p.}{pp.}                % Set page reference format
+\Crefname{page}{Page}{Pages}
+
+\usepackage{tabu}
+
+% convert eps to pdf on the fly.
+\usepackage{epstopdf}
+
+% Path to figures.
+\graphicspath{{figures/}}
+
+% Rotating objects.
+\usepackage{rotating}
+
+\lefthyphenmin=4
+
+%%%%% TikZ plots
+\usepackage{tikz}
+\usepackage{pgfplots}
+\usepackage{grffile}
+\usepackage{pgfplotstable}
+\usepgfplotslibrary{patchplots,fillbetween,colorbrewer,groupplots}
+\usetikzlibrary{calc,trees,positioning,arrows,chains,shapes.geometric,%
+	decorations.pathreplacing,decorations.pathmorphing,shapes,%
+	matrix,shapes.symbols,bayesnet,arrows.meta,plotmarks,patterns}
+
+% Set your default pgfplot and tikz options, if needed.
+\pgfplotsset{compat=newest}
+
+
+% To have tables with footnote of the table.
+\usepackage{threeparttable}
+
+% Allow equations to spread in two pages.
+\allowdisplaybreaks[1]
+
+\begin{document}
+	\include{TexFiles/abbr}
+
+	% Stretch vertical space of tables.
+	\renewcommand{\arraystretch}{1.1}
+
+	\frontmatter
+	
+	% Create title page
+	\maketitle
+
+	% Create abstract page
+	\include{TexFiles/abstract}
+
+	% Create Acknowledgements
+	\include{TexFiles/acknowledgements}
+
+
+	% Create table of contents page
+	\cleardoublepage
+	
+	\addcontentsline{toc}{chapter}{{\textbf{CONTENTS}}}
+	\tableofcontents
+
+	% Create Acknowledgements
+	\include{TexFiles/preface}
+
+
+	\include{TexFiles/notations}
+
+
+	\mainmatter
+
+
+
+% Actual thesis
+\glsresetall
+
+\include{TexFiles/introduction}
+\include{TexFiles/Literature}
+\include{TexFiles/Aim}
+\include{TexFiles/Methodology}
+\include{TexFiles/conclusion}
+
+\cleardoublepage
+\bibliography{references}
+
+
+\appendix
+\allowdisplaybreaks[1]
+
+
+\cleardoublepage
+\include{TexFiles/appendix}
+
+\end{document}
